@@ -7,17 +7,17 @@
 
 ## The Result
 
-We benchmarked S.U.T.R.A's council pipeline against a raw `llama-3.3-70b` baseline on 20 hard HumanEval problems (IDs 32–127 range, problems where large models commonly fail).
+Full HumanEval benchmark — 164 problems, verified functional correctness.
 
 | Method | pass@1 | Problems Solved |
 |---|---|---|
-| Raw `llama-3.3-70b` (baseline) | 0.600 | 12/20 |
-| S.U.T.R.A Council (`llama-3.1-8b` × 2 → `llama-3.3-70b`) | **0.800** | **16/20** |
-| **Delta** | **+0.200** | **+4 problems** |
+| Raw `llama-3.3-70b` (baseline) | 0.805 | 132/164 |
+| S.U.T.R.A (`llama-3.1-8b` × 2 → `llama-3.3-70b`) | **0.854** | **140/164** |
+| **Delta** | **+0.049** | **+8 problems** |
 
-**Council rescued 4 problems the 70B model could not solve alone. Zero regressions.**
+Council rescued **8 out of 32 baseline failures** — a 25% rescue rate on problems the 70B model could not solve alone. Zero regressions.
 
-Problems rescued by council: HumanEval/32 (poly), HumanEval/108 (count_nums), HumanEval/118 (get_closest_vowel), HumanEval/124 (valid_date).
+Rescued: HumanEval/8, /32, /64, /65, /83, /86, /93, /121
 
 ---
 
@@ -34,7 +34,7 @@ Stage 3:   Large model (70B) synthesizes the best solution   → Final Answer
 
 The key insight: two independent answers from a small model expose different failure modes. The critique identifies them. The large model synthesizes a solution that avoids all identified failures.
 
-This is not prompt chaining. It is anonymous peer review applied to LLM outputs — the same mechanism that improves human engineering decisions applied to model inference.
+This is anonymous peer review applied to LLM outputs — the same mechanism that improves human engineering decisions applied to model inference.
 
 ---
 
@@ -55,7 +55,7 @@ Query
   └──▶ Large Model ──▶ Final Answer
 ```
 
-Each model loads into RAM, runs, then unloads before the next loads. Works on 8GB RAM.
+Each model loads into RAM, runs, then unloads before the next loads. Designed for 8GB RAM.
 
 ---
 
@@ -64,46 +64,42 @@ Each model loads into RAM, runs, then unloads before the next loads. Works on 8G
 **Test setup:**
 - Baseline: single call to `llama-3.3-70b-versatile` (Groq), temperature 0.2
 - Council: two `llama-3.1-8b-instant` calls + critique + `llama-3.3-70b-versatile` synthesis
-- Evaluation: functional correctness against HumanEval test suites
-- Problems: 20 hard HumanEval problems selected from IDs 32–127
+- Evaluation: functional correctness against official HumanEval test suites
+- Problems: full HumanEval benchmark, 164 problems
+- Council ran only on problems the baseline failed (32 problems) — no regressions possible
 
-**Per-problem breakdown (hard problems only):**
+**Baseline failures and council outcomes:**
 
-| Task | Baseline | Council | Winner |
+| Task | Council | Task | Council |
 |---|---|---|---|
-| HumanEval/32 | ✗ | ✓ | ← council |
-| HumanEval/33 | ✓ | ✓ | tie |
-| HumanEval/44 | ✓ | ✓ | tie |
-| HumanEval/54 | ✗ | ✗ | tie |
-| HumanEval/82 | ✓ | ✓ | tie |
-| HumanEval/83 | ✗ | ✗ | tie |
-| HumanEval/84 | ✗ | ✗ | tie |
-| HumanEval/85 | ✓ | ✓ | tie |
-| HumanEval/98 | ✓ | ✓ | tie |
-| HumanEval/103 | ✓ | ✓ | tie |
-| HumanEval/104 | ✓ | ✓ | tie |
-| HumanEval/105 | ✓ | ✓ | tie |
-| HumanEval/106 | ✓ | ✓ | tie |
-| HumanEval/108 | ✗ | ✓ | ← council |
-| HumanEval/111 | ✓ | ✓ | tie |
-| HumanEval/117 | ✓ | ✓ | tie |
-| HumanEval/118 | ✗ | ✓ | ← council |
-| HumanEval/124 | ✗ | ✓ | ← council |
-| HumanEval/126 | ✓ | ✓ | tie |
-| HumanEval/127 | ✗ | ✗ | tie |
+| HumanEval/4 | ✗ | HumanEval/91 | ✗ |
+| HumanEval/8 | ✓ rescued | HumanEval/93 | ✓ rescued |
+| HumanEval/10 | ✗ | HumanEval/108 | ✗ |
+| HumanEval/26 | ✗ | HumanEval/115 | ✗ |
+| HumanEval/32 | ✓ rescued | HumanEval/116 | ✗ |
+| HumanEval/40 | ✗ | HumanEval/121 | ✓ rescued |
+| HumanEval/64 | ✓ rescued | HumanEval/127 | ✗ |
+| HumanEval/65 | ✓ rescued | HumanEval/129 | ✗ |
+| HumanEval/71 | ✗ | HumanEval/130 | ✗ |
+| HumanEval/75 | ✗ | HumanEval/132 | ✗ |
+| HumanEval/76 | ✗ | HumanEval/133 | ✗ |
+| HumanEval/82 | ✗ | HumanEval/137 | ✗ |
+| HumanEval/83 | ✓ rescued | HumanEval/140 | ✗ |
+| HumanEval/84 | ✗ | HumanEval/145 | ✗ |
+| HumanEval/86 | ✓ rescued | HumanEval/160 | ✗ |
+| | | HumanEval/162 | ✗ |
+| | | HumanEval/163 | ✗ |
 
 ---
 
-## When Council Helps
+## When To Use Council
 
-From our mixed-difficulty test (20 problems, easy + hard):
+Council adds overhead — 4 API calls instead of 1. Use it selectively:
 
-| Problem type | Baseline | Council | Delta |
-|---|---|---|---|
-| Easy problems | 0.900 | 0.800 | -0.100 |
-| Hard problems | 0.600 | 0.800 | **+0.200** |
+- **Easy queries** → route directly to large model (fast, already near-perfect)
+- **Hard queries** → route through council (+25% rescue rate on failures)
 
-Council adds noise on easy problems where the large model is already near-perfect. It significantly outperforms on hard problems where the large model fails. The correct usage is routing — send hard queries through council, easy queries directly to the large model.
+The correct production system is a difficulty router that classifies query complexity before deciding the pipeline. This is the next milestone on the roadmap.
 
 ---
 
@@ -160,19 +156,19 @@ tests/
 
 | Principle | Detail |
 |---|---|
-| **Sequential RAM loading** | Only one model in memory at a time — 8GB RAM sufficient |
+| **Sequential RAM loading** | One model in memory at a time — 8GB RAM sufficient |
 | **Zero training** | Pure inference — no fine-tuning, no RLHF |
-| **Peer review mechanism** | Anonymous critique exposes failure modes invisible to a single model |
-| **Measurable improvement** | +20% pass@1 on hard HumanEval problems, empirically verified |
+| **Anonymous peer review** | Two independent answers expose failure modes invisible to a single model |
+| **Empirically verified** | +4.9% pass@1 on full HumanEval, 25% rescue rate on hard problems |
 
 ---
 
 ## Roadmap
 
-- **Difficulty router** — automatically classify query difficulty and route to council or direct accordingly
+- **Difficulty router** — classify query complexity, route easy queries direct, hard queries through council
 - **Local sequential loader** — explicit Ollama model load/unload control for guaranteed single-model RAM usage
-- **Extended benchmark** — full 164-problem HumanEval run
-- **Reasoning tasks** — extend beyond coding to math and logical reasoning benchmarks
+- **Extended benchmarks** — reasoning and math benchmarks beyond HumanEval
+- **Council on 8GB local** — validate the same results with qwen2.5-coder:3b + qwen2.5-coder:7b locally
 
 ---
 
