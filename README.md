@@ -28,14 +28,10 @@ ran the full HumanEval benchmark. 164 python coding problems. standard eval ever
 
 ### SUTRA vs cloud models (HumanEval pass@1)
 
-| model | pass@1 | type |
-|-------|--------|------|
-| GPT-3.5 Turbo | 65.0% | cloud API |
-| GPT-4 (original) | 80.0% | cloud API |
-| raw `llama-3.3-70b` (our baseline) | 80.5% | local / cloud |
-| **SUTRA council** | **85.4%** | **local, 8GB RAM** |
-| GPT-4o | 91.0% | cloud API |
-| Claude 3.5 Sonnet | 93.0% | cloud API |
+<img width="1622" height="608" alt="Benchmark" src="https://github.com/user-attachments/assets/d41e7fe0-8451-4a56-9614-acb54cd3a2f2" />
+
+
+
 
 > SUTRA uses `llama-3.3-70b` as the backbone + two `llama-3.1-8b` council passes. cloud model scores from published benchmarks. this is not a parameter-count comparison — SUTRA costs 4 inference calls vs 1, but runs on consumer hardware with no API subscription.
 
