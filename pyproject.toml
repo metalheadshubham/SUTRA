@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sutra-llm"
+version = "0.1.1"
+description = "Chain small language models to outperform large ones — runs locally on 8GB RAM"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Shubham Kumar", email = "uselessmailforsurf@gmail.com" }
+]
+keywords = ["llm", "ollama", "ai", "local-ai", "council", "inference"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "ollama>=0.4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+sutra = "agent_handoff.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/metalheadshubham/SUTRA"
+Repository = "https://github.com/metalheadshubham/SUTRA"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent_handoff*"]

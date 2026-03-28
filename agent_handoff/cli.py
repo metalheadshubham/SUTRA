@@ -255,7 +255,7 @@ def _rgb(r: int, g: int, b: int) -> str:
 
 
 def _header():
-    """Print the SUTRA banner with magenta → cyan → bright white gradient."""
+    """Print the SUTRA banner with magenta/cyan foreground colors only."""
     # Hand-coded figlet-style ASCII block letters
     banner_lines = [
         "███████╗ ██╗   ██╗ ████████╗ ██████╗   █████╗ ",
@@ -266,30 +266,12 @@ def _header():
         "╚══════╝  ╚═════╝     ╚═╝    ╚═╝  ╚═╝ ╚═╝  ╚═╝",
     ]
 
-    # Gradient: magenta(200,50,200) → cyan(0,220,255) → bright white(255,255,255)
-    # across the columns of each line
-    max_cols = max(len(line) for line in banner_lines)
+    # Foreground-only colors: top half magenta, bottom half cyan
+    colors = [C.BMAGENTA] * 3 + [C.BCYAN] * 3
 
     print()
-    for line in banner_lines:
-        colored_line = "    "
-        for col_idx, ch in enumerate(line):
-            t = col_idx / max(max_cols - 1, 1)
-            if t < 0.5:
-                # magenta → cyan
-                s = t * 2
-                r = int(200 * (1 - s))
-                g = int(50 + 170 * s)
-                b = int(200 + 55 * s)
-            else:
-                # cyan → bright white
-                s = (t - 0.5) * 2
-                r = int(0 + 255 * s)
-                g = int(220 + 35 * s)
-                b = 255
-            colored_line += _rgb(r, g, b) + ch
-        colored_line += C.RESET
-        print(colored_line)
+    for line, color in zip(banner_lines, colors):
+        print(f"    {C.BOLD}{color}{line}{C.RESET}")
 
     print(f"    {C.DIM}Structured Universal Transfer via Retrieval Adaptation{C.RESET}")
     print(f"    {C.DIM}by Shubham Kumar{C.RESET}")
