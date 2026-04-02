@@ -1,0 +1,52 @@
+S.U.T.R.A — Walkthrough
+What Was Built
+A production-ready Python library (agent_handoff) implementing a structured demonstration handoff protocol between small language models via Ollama.
+
+File Structure
+d:\S.U.T.R.A\
+├── agent_handoff/
+│   ├── __init__.py          # Package exports (v0.1.0)
+│   ├── __main__.py          # python -m entry point
+│   ├── protocol.py          # HandoffPacket + HandoffResult dataclasses
+│   ├── parser.py            # XML-first parser with regex fallback
+│   ├── cache.py             # SHA-256 keyed cache with TTL + JSON persistence
+│   ├── templates.py         # PROMPT_A / PROMPT_B templates
+│   ├── handoff.py           # AgentHandoff orchestrator
+│   ├── benchmark.py         # Handoff vs raw comparison (10 queries, CLI)
+│   └── utils.py             # hash_query, truncate_text, format_demonstrations
+├── tests/
+│   ├── __init__.py
+│   ├── test_parser.py       # 16 tests
+│   ├── test_cache.py        # 15 tests
+│   ├── test_protocol.py     # 13 tests
+│   └── test_utils.py        # 12 tests
+├── requirements.txt         # ollama + pytest
+└── README.md                # Full docs with architecture, examples, etc.
+Key Design Decisions
+Decision	Rationale
+XML-first parsing with regex fallback	Small LLMs often produce malformed XML; dual strategy maximizes extraction success
+HandoffPacket
+ as the inter-model message	Clean data boundary — models never touch each other's raw output
+SHA-256 cache keying	Deterministic, collision-resistant, supports profile-scoped keys
+Separate 
+generate_demonstrations()
+ / 
+generate_final()
+Enables N-model chaining beyond the default 2-model pipeline
+ollama.Client() over global functions	Supports custom hosts / multi-server setups
+Bug Fix During Verification
+The 
+_try_xml_parse
+ function in 
+parser.py
+ was using ET.tostring() which includes element tail text (text after the closing tag). This caused 
+parse_answer()
+ to return surrounding text alongside the answer. Fixed by reconstructing inner content from elem.text and explicit child serialization.
+
+Verification Results
+56 passed in 0.45s
+Parser: XML extraction, regex fallback, malformed input, tag stripping — all pass
+Cache: set/get, TTL expiry, persistence round-trip, key determinism — all pass
+Protocol: creation, defaults, JSON serialization round-trip — all pass
+Utils: hashing, truncation, formatting — all pass
+Import check: from agent_handoff import AgentHandoff, DemonstrationCache, HandoffPacket, HandoffResult — clean, version 0.1.0
